@@ -23,7 +23,7 @@ log_file = config.LOG_FILE
 
 try:
     file_handler = logging.handlers.RotatingFileHandler(
-        log_file, maxBytes=2*1024*1024, backupCount=2, encoding='utf-8'
+        log_file, maxBytes=2 * 1024 * 1024, backupCount=2, encoding='utf-8'
     )
     file_handler.setFormatter(log_formatter)
     file_handler.setLevel(logging.INFO)
@@ -34,7 +34,7 @@ try:
 except Exception as log_e:
     print(f"FATAL: Could not configure file logging to {log_file}: {log_e}")
 
-logging.info("="*20 + " Приложение запущено " + "="*20)
+logging.info("=" * 20 + " Приложение запущено " + "=" * 20)
 
 
 # --- Хелперы ---
@@ -83,7 +83,8 @@ class LibraryHandler:
         adapter = HTTPAdapter(max_retries=retry_strategy)
         self.session.mount("https://", adapter)
         self.session.mount("http://", adapter)
-        logging.info(f"Requests session created with retry strategy (max={config.MAX_RETRIES}, statuses={config.RETRY_ON_HTTP_CODES})")
+        logging.info(f"Requests session created with retry strategy (max={config.MAX_RETRIES}, "
+                     f"statuses={config.RETRY_ON_HTTP_CODES})")
 
     def _get_initial_cookies(self):
         if not self.session:
@@ -103,15 +104,15 @@ class LibraryHandler:
                 logging.warning("Server did not set any cookies during initial request.")
                 return False
         except requests.exceptions.Timeout:
-             msg = f"Ошибка: Превышено время ожидания при получении куки с {config.INITIAL_COOKIE_URL}."
-             self.status_callback(msg)
-             logging.error(msg)
-             return False
+            msg = f"Ошибка: Превышено время ожидания при получении куки с {config.INITIAL_COOKIE_URL}."
+            self.status_callback(msg)
+            logging.error(msg)
+            return False
         except requests.exceptions.RequestException as e:
-             msg = f"Ошибка при получении куки: {e}."
-             self.status_callback(msg)
-             logging.error(f"Error getting initial cookies: {e}", exc_info=True)
-             return False
+            msg = f"Ошибка при получении куки: {e}."
+            self.status_callback(msg)
+            logging.error(f"Error getting initial cookies: {e}", exc_info=True)
+            return False
 
     def download_pages(self, base_url, url_ids, filename_pdf, total_pages, output_dir):
         self.stop_event.clear()
@@ -119,10 +120,11 @@ class LibraryHandler:
             self._setup_session_with_retry()
         got_cookies = self._get_initial_cookies()
         if not got_cookies:
-             self.status_callback("Продолжаем без автоматических куки (могут быть проблемы)...")
+            self.status_callback("Продолжаем без автоматических куки (могут быть проблемы)...")
 
         self.status_callback(f"Начинаем скачивание {total_pages} страниц в '{output_dir}'...")
-        logging.info(f"Starting download of {total_pages} pages to '{output_dir}'. BaseURL: {base_url}, IDs: {url_ids}, PDFName: {filename_pdf}")
+        logging.info(f"Starting download of {total_pages} pages to '{output_dir}'. "
+                     f"BaseURL: {base_url}, IDs: {url_ids}, PDFName: {filename_pdf}")
         self.progress_callback(0, total_pages)
 
         success_count = 0
@@ -136,33 +138,38 @@ class LibraryHandler:
             page_b64_bytes = base64.b64encode(page_string.encode('utf-8'))
             page_b64_string = page_b64_bytes.decode('utf-8')
             final_url = f"{base_url}{url_ids}{page_b64_string}"
-            base_output_filename = os.path.join(output_dir, f"page_{i:03d}")
+            base_output_filename = os.path.join(output_dir, f"page_{i: 03d}")
 
-            status_msg = f"Скачиваю страницу {i+1}/{total_pages}..."
-            self.status_callback(status_msg) # Обновляем GUI лог
+            status_msg = f"Скачиваю страницу {i + 1}/{total_pages}..."
+            self.status_callback(status_msg)  # Обновляем GUI лог
 
             try:
-                logging.debug(f"Requesting page {i+1}: {final_url}")
+                logging.debug(f"Requesting page {i + 1}: {final_url}")
                 response = self.session.get(final_url, timeout=(10, 30))
-                logging.debug(f"Page {i+1} response status: {response.status_code}")
+                logging.debug(f"Page {i + 1} response status: {response.status_code}")
                 response.raise_for_status()
 
                 content_type = response.headers.get('Content-Type', '').lower()
                 if 'text/html' in content_type:
-                     msg = f"Ошибка на стр. {i+1}: Получен HTML вместо изображения. Проблема с сессией?"
-                     self.status_callback(msg)
-                     logging.error(f"{msg} URL: {final_url}")
-                     continue
+                    msg = f"Ошибка на стр. {i + 1}: Получен HTML вместо изображения. Проблема с сессией?"
+                    self.status_callback(msg)
+                    logging.error(f"{msg} URL: {final_url}")
+                    continue
 
                 extension = ".jpg"
-                if 'png' in content_type: extension = ".png"
-                elif 'gif' in content_type: extension = ".gif"
-                elif 'bmp' in content_type: extension = ".bmp"
-                elif 'tiff' in content_type: extension = ".tiff"
-                elif 'jpeg' in content_type: extension = ".jpeg"
+                if 'png' in content_type:
+                    extension = ".png"
+                elif 'gif' in content_type:
+                    extension = ".gif"
+                elif 'bmp' in content_type:
+                    extension = ".bmp"
+                elif 'tiff' in content_type:
+                    extension = ".tiff"
+                elif 'jpeg' in content_type:
+                    extension = ".jpeg"
 
                 final_output_filename = base_output_filename + extension
-                logging.debug(f"Saving page {i+1} to {final_output_filename}")
+                logging.debug(f"Saving page {i + 1} to {final_output_filename}")
 
                 with open(final_output_filename, 'wb') as f:
                     f.write(response.content)
@@ -172,29 +179,30 @@ class LibraryHandler:
                     self.status_callback(msg)
                     logging.warning(f"{msg} URL: {final_url}")
                 else:
-                     success_count += 1
-                     logging.info(f"Page {i+1}/{total_pages} downloaded successfully as {os.path.basename(final_output_filename)}")
+                    success_count += 1
+                    logging.info(
+                        f"Page {i + 1}/{total_pages} downloaded successfully as {os.path.basename(final_output_filename)}")
 
             except requests.exceptions.HTTPError as e:
-                 msg = f"Ошибка HTTP {e.response.status_code} на стр. {i+1} (после {config.MAX_RETRIES} попыток): {e}"
-                 self.status_callback(msg)
-                 logging.error(f"{msg} URL: {final_url}")
-                 if e.response.status_code in [401, 403]:
-                     self.status_callback("   (Возможно, сессия истекла или куки неверны)")
+                msg = f"Ошибка HTTP {e.response.status_code} на стр. {i + 1} (после {config.MAX_RETRIES} попыток): {e}"
+                self.status_callback(msg)
+                logging.error(f"{msg} URL: {final_url}")
+                if e.response.status_code in [401, 403]:
+                    self.status_callback("   (Возможно, сессия истекла или куки неверны)")
             except requests.exceptions.Timeout:
-                 msg = f"Ошибка: Таймаут при скачивании стр. {i+1} (после {config.MAX_RETRIES} попыток)."
-                 self.status_callback(msg)
-                 logging.error(f"{msg} URL: {final_url}")
+                msg = f"Ошибка: Таймаут при скачивании стр. {i + 1} (после {config.MAX_RETRIES} попыток)."
+                self.status_callback(msg)
+                logging.error(f"{msg} URL: {final_url}")
             except requests.exceptions.RequestException as e:
-                msg = f"Ошибка сети/сервера на стр. {i+1} (после {config.MAX_RETRIES} попыток): {e}"
+                msg = f"Ошибка сети/сервера на стр. {i + 1} (после {config.MAX_RETRIES} попыток): {e}"
                 self.status_callback(msg)
                 logging.error(f"{msg} URL: {final_url}", exc_info=True)
             except IOError as e:
-                msg = f"Ошибка записи файла для стр. {i+1}: {e}"
+                msg = f"Ошибка записи файла для стр. {i + 1}: {e}"
                 self.status_callback(msg)
                 logging.error(f"{msg} Filename: {final_output_filename}", exc_info=True)
             except Exception as e:
-                msg = f"Неожиданная ошибка на стр. {i+1}: {e}"
+                msg = f"Неожиданная ошибка на стр. {i + 1}: {e}"
                 self.status_callback(msg)
                 logging.error(f"{msg} URL: {final_url}", exc_info=True)
 
@@ -205,7 +213,6 @@ class LibraryHandler:
 
         logging.info(f"Download finished. Success: {success_count}/{total_pages}")
         return success_count, total_pages
-
 
     def process_images(self, input_folder, output_folder):
         self.stop_event.clear()
@@ -245,8 +252,10 @@ class LibraryHandler:
             current_file = sorted_files[page_index]
             current_path = os.path.join(input_folder, current_file)
             current_page_num = get_page_number(current_file)
-            current_is_spread = page_index > 0 and is_likely_spread(current_path, config.DEFAULT_SPREAD_ASPECT_RATIO_THRESHOLD)
-            logging.debug(f"Processing index {page_index}: {current_file} (Page: {current_page_num}, IsSpread: {current_is_spread})")
+            current_is_spread = page_index > 0 and is_likely_spread(current_path,
+                                                                    config.DEFAULT_SPREAD_ASPECT_RATIO_THRESHOLD)
+            logging.debug(
+                f"Processing index {page_index}: {current_file} (Page: {current_page_num}, IsSpread: {current_is_spread})")
 
             processed_increment = 0
 
@@ -260,7 +269,8 @@ class LibraryHandler:
                 try:
                     shutil.copy2(current_path, output_path)
                     processed_increment = 1
-                    logging.info(f"Copied {'cover' if page_index == 0 else 'spread'}: {current_file} -> {output_filename}")
+                    logging.info(
+                        f"Copied {'cover' if page_index == 0 else 'spread'}: {current_file} -> {output_filename}")
                 except Exception as e:
                     msg = f"Ошибка при копировании {current_file}: {e}"
                     self.status_callback(msg)
@@ -293,10 +303,12 @@ class LibraryHandler:
                                     logging.debug(f"    Resizing images to target height: {target_height}px")
                                     ratio_left = target_height / h_left
                                     w_left_final = int(w_left * ratio_left)
-                                    img_left_final = img_left.resize((w_left_final, target_height), Image.Resampling.LANCZOS)
+                                    img_left_final = img_left.resize((w_left_final, target_height),
+                                                                     Image.Resampling.LANCZOS)
                                     ratio_right = target_height / h_right
                                     w_right_final = int(w_right * ratio_right)
-                                    img_right_final = img_right.resize((w_right_final, target_height), Image.Resampling.LANCZOS)
+                                    img_right_final = img_right.resize((w_right_final, target_height),
+                                                                       Image.Resampling.LANCZOS)
                                 else:
                                     target_height = h_left
                                     img_left_final = img_left
@@ -339,7 +351,7 @@ class LibraryHandler:
                 # Вариант 2.3: Текущий одиночный - последний файл
                 else:
                     _, ext = os.path.splitext(current_file)
-                    output_filename = f"spread_{current_page_num:03d}{ext}"
+                    output_filename = f"spread_{current_page_num: 03d}{ext}"
                     output_path = os.path.join(output_folder, output_filename)
                     status_msg = f"Копирую последнюю одиночную страницу: {current_file} -> {output_filename}"
                     self.status_callback(status_msg)
@@ -356,7 +368,8 @@ class LibraryHandler:
             processed_count += processed_increment
             self.progress_callback(page_index, total_files_to_process)
 
-        logging.info(f"Processing finished. Processed/copied: {processed_count}, Spreads created: {created_spread_count}")
+        logging.info(
+            f"Processing finished. Processed/copied: {processed_count}, Spreads created: {created_spread_count}")
         return processed_count, created_spread_count
 
 
@@ -395,7 +408,7 @@ class JournalDownloaderApp:
 
         # --- Фрейм ввода ---
         input_frame = ttk.LabelFrame(root, text="Параметры", padding=10)
-        input_frame.pack(padx=10, pady=(10,5), fill=tk.X)
+        input_frame.pack(padx=10, pady=(10, 5), fill=tk.X)
 
         # --- Поля ввода ---
         ttk.Label(input_frame, text="Базовый URL (до ID):").grid(row=0, column=0, sticky=tk.W)
@@ -443,7 +456,8 @@ class JournalDownloaderApp:
         self.download_button.pack(side=tk.LEFT, padx=5)
         self.process_button = ttk.Button(control_frame, text="Только создать развороты", command=self.run_processing)
         self.process_button.pack(side=tk.LEFT, padx=5)
-        self.stop_button = ttk.Button(control_frame, text="СТОП", command=self.stop_action, state=tk.DISABLED, style="Stop.TButton")
+        self.stop_button = ttk.Button(control_frame, text="СТОП", command=self.stop_action, state=tk.DISABLED,
+                                      style="Stop.TButton")
         self.stop_button.pack(side=tk.RIGHT, padx=15)
 
         # --- Прогресс-бар ---
@@ -454,7 +468,7 @@ class JournalDownloaderApp:
 
         # --- Лог ---
         status_frame = ttk.LabelFrame(root, text="Статус", padding=10)
-        status_frame.pack(padx=10, pady=(0,10), fill=tk.BOTH, expand=True)
+        status_frame.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
         self.status_text = scrolledtext.ScrolledText(status_frame, height=10, wrap=tk.WORD, state=tk.DISABLED)
         self.status_text.pack(fill=tk.BOTH, expand=True)
 
@@ -462,17 +476,15 @@ class JournalDownloaderApp:
         self.load_settings()
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-
     # --- Методы для GUI ---
     def browse_output_pages(self):
         initial_dir = self.pages_dir_entry.get()
         if not os.path.isdir(initial_dir):
-            initial_dir = os.path.expanduser("~") # Домашняя директория
+            initial_dir = os.path.expanduser("~")  # Домашняя директория
         directory = filedialog.askdirectory(initialdir=initial_dir)
         if directory:
             self.pages_dir_entry.delete(0, tk.END)
             self.pages_dir_entry.insert(0, directory)
-
 
     def browse_output_spreads(self):
         initial_dir = self.spreads_dir_entry.get()
@@ -483,17 +495,15 @@ class JournalDownloaderApp:
             self.spreads_dir_entry.delete(0, tk.END)
             self.spreads_dir_entry.insert(0, directory)
 
-
     def _update_status_safe(self, message):
         if self.root.winfo_exists():
             self.root.after(0, self.update_status, message)
-
 
     def update_status(self, message):
         if not self.root.winfo_exists(): return
 
         if isinstance(message, str) and not message.startswith("---"):
-             logging.info(message)
+            logging.info(message)
 
         # Обновляем GUI
         self.status_text.config(state=tk.NORMAL)
@@ -502,11 +512,9 @@ class JournalDownloaderApp:
         self.status_text.see(tk.END)
         self.status_text.config(state=tk.DISABLED)
 
-
     def _update_progress_safe(self, current_value, max_value):
         if self.root.winfo_exists():
             self.root.after(0, self.update_progress, current_value, max_value)
-
 
     def update_progress(self, current_value, max_value):
         if not self.root.winfo_exists(): return
@@ -516,7 +524,6 @@ class JournalDownloaderApp:
         else:
             self.progress_bar['value'] = 0
 
-
     def clear_status(self):
         if not self.root.winfo_exists(): return
         self.status_text.config(state=tk.NORMAL)
@@ -524,13 +531,11 @@ class JournalDownloaderApp:
         self.status_text.config(state=tk.DISABLED)
         logging.info("GUI log cleared by user.")
 
-
     def stop_action(self):
         msg = "--- Получен СТОП ---"
         self._update_status_safe(msg)
         self.stop_event.set()
         self.stop_button.config(state=tk.DISABLED)
-
 
     def _set_buttons_state(self, task_running):
         if not self.root.winfo_exists(): return
@@ -544,9 +549,9 @@ class JournalDownloaderApp:
         self.browse_spreads_button.config(state=state)
 
         if task_running and not self.stop_event.is_set():
-             self.stop_button.config(state=tk.NORMAL)
+            self.stop_button.config(state=tk.NORMAL)
         else:
-             self.stop_button.config(state=tk.DISABLED)
+            self.stop_button.config(state=tk.DISABLED)
 
         # Обновление заголовка окна
         try:
@@ -556,8 +561,7 @@ class JournalDownloaderApp:
                 self.update_progress(0, 1)
                 self.root.title(self.original_title)
         except tk.TclError:
-             pass
-
+            pass
 
     def _validate_download_inputs(self):
         base_url = self.url_base_entry.get().strip()
@@ -580,17 +584,17 @@ class JournalDownloaderApp:
         try:
             pages = int(total_pages_str)
             if pages <= 0:
-                 messagebox.showerror("Ошибка ввода", "Количество страниц должно быть положительным числом.")
-                 return False
+                messagebox.showerror("Ошибка ввода", "Количество страниц должно быть положительным числом.")
+                return False
         except ValueError:
             messagebox.showerror("Ошибка ввода", "Количество страниц должно быть целым числом.")
             return False
 
         if not base_url.startswith(("http://", "https://")):
-             if not messagebox.askyesno("Предупреждение", f"Базовый URL '{base_url}' не похож на веб-адрес (не начинается с http:// или https://).\nПродолжить?"):
-                 return False
+            if not messagebox.askyesno("Предупреждение",
+                                       f"Базовый URL '{base_url}' не похож на веб-адрес (не начинается с http:// или https://).\nПродолжить?"):
+                return False
         return True
-
 
     def _validate_processing_inputs(self, check_dir_exists=True):
         pages_dir = self.pages_dir_entry.get().strip()
@@ -601,23 +605,22 @@ class JournalDownloaderApp:
         if not spreads_dir: errors.append("Папка для разворотов")
 
         if errors:
-             messagebox.showerror("Ошибка ввода", "Пожалуйста, укажите:\n- " + "\n- ".join(errors))
-             return False
+            messagebox.showerror("Ошибка ввода", "Пожалуйста, укажите:\n- " + "\n- ".join(errors))
+            return False
 
         if check_dir_exists:
             if not os.path.isdir(pages_dir):
-                 messagebox.showerror("Ошибка папки", f"Папка со страницами '{pages_dir}' не найдена.")
-                 return False
+                messagebox.showerror("Ошибка папки", f"Папка со страницами '{pages_dir}' не найдена.")
+                return False
             try:
                 if not os.listdir(pages_dir):
-                     messagebox.showwarning("Предупреждение", f"Папка '{pages_dir}' пуста. Обработка невозможна.")
-                     return False
+                    messagebox.showwarning("Предупреждение", f"Папка '{pages_dir}' пуста. Обработка невозможна.")
+                    return False
             except Exception as e:
-                 messagebox.showerror("Ошибка папки", f"Не удалось прочитать содержимое папки '{pages_dir}': {e}")
-                 logging.error(f"Error reading directory '{pages_dir}': {e}", exc_info=True)
-                 return False
+                messagebox.showerror("Ошибка папки", f"Не удалось прочитать содержимое папки '{pages_dir}': {e}")
+                logging.error(f"Error reading directory '{pages_dir}': {e}", exc_info=True)
+                return False
         return True
-
 
     def open_folder(self, folder_path):
         msg = f"Попытка открыть папку: {folder_path}"
@@ -635,7 +638,6 @@ class JournalDownloaderApp:
             msg = f"Ошибка при открытии папки '{norm_path}': {e}"
             self._update_status_safe(msg)
             logging.error(msg, exc_info=True)
-
 
     def save_settings(self):
         settings = {
@@ -675,12 +677,12 @@ class JournalDownloaderApp:
 
         # Чтобы не спамить лишний раз
         self.initial_settings = {
-        'url_base': self.url_base_entry.get(),
-        'url_ids': self.url_ids_entry.get(),
-        'pdf_filename': self.pdf_filename_entry.get(),
-        'total_pages': self.total_pages_entry.get(),
-        'pages_dir': self.pages_dir_entry.get(),
-        'spreads_dir': self.spreads_dir_entry.get(),
+            'url_base': self.url_base_entry.get(),
+            'url_ids': self.url_ids_entry.get(),
+            'pdf_filename': self.pdf_filename_entry.get(),
+            'total_pages': self.total_pages_entry.get(),
+            'pages_dir': self.pages_dir_entry.get(),
+            'spreads_dir': self.spreads_dir_entry.get(),
         }
         logging.info(f"Initial settings captured for comparison: {self.initial_settings}")
 
@@ -694,24 +696,23 @@ class JournalDownloaderApp:
                 logging.info("User chose not to exit while process is running.")
                 return
         else:
-             logging.info("Application closing normally.")
+            logging.info("Application closing normally.")
 
-             current_settings = {
-                 'url_base': self.url_base_entry.get(),
-                 'url_ids': self.url_ids_entry.get(),
-                 'pdf_filename': self.pdf_filename_entry.get(),
-                 'total_pages': self.total_pages_entry.get(),
-                 'pages_dir': self.pages_dir_entry.get(),
-                 'spreads_dir': self.spreads_dir_entry.get(),
-             }
+            current_settings = {
+                'url_base': self.url_base_entry.get(),
+                'url_ids': self.url_ids_entry.get(),
+                'pdf_filename': self.pdf_filename_entry.get(),
+                'total_pages': self.total_pages_entry.get(),
+                'pages_dir': self.pages_dir_entry.get(),
+                'spreads_dir': self.spreads_dir_entry.get(),
+            }
 
-             if current_settings != self.initial_settings:
-                 logging.info("Settings have changed from initial values. Saving...")
-                 self.save_settings()
-             else:
-                 logging.info("Settings are unchanged from initial values. Skipping save.")
-             self._destroy_root()
-
+            if current_settings != self.initial_settings:
+                logging.info("Settings have changed from initial values. Saving...")
+                self.save_settings()
+            else:
+                logging.info("Settings are unchanged from initial values. Skipping save.")
+            self._destroy_root()
 
     def _check_thread_before_destroy(self):
         """Ждет завершения потока перед закрытием окна."""
@@ -720,12 +721,10 @@ class JournalDownloaderApp:
         else:
             self._destroy_root()
 
-
     def _destroy_root(self):
         if self.root:
             self.root.destroy()
             self.root = None
-
 
     # --- Методы запуска задач ---
     def _prepare_task_run(self):
@@ -733,7 +732,6 @@ class JournalDownloaderApp:
         self.clear_status()
         self.stop_event.clear()
         self._set_buttons_state(task_running=True)
-
 
     def _create_output_dir(self, dir_path, dir_purpose):
         try:
@@ -748,7 +746,6 @@ class JournalDownloaderApp:
             messagebox.showerror("Ошибка папки", f"Не удалось создать папку:\n{dir_path}\n{e}")
             self._set_buttons_state(task_running=False)
             return False
-
 
     def run_download(self):
         if not self._validate_download_inputs(): return
@@ -769,7 +766,6 @@ class JournalDownloaderApp:
         )
         self.current_thread.start()
 
-
     def run_processing(self):
         if not self._validate_processing_inputs(check_dir_exists=True): return
         self._prepare_task_run()
@@ -786,10 +782,9 @@ class JournalDownloaderApp:
         )
         self.current_thread.start()
 
-
     def run_all(self):
         if not self._validate_download_inputs() or not self._validate_processing_inputs(check_dir_exists=False):
-             return
+            return
         self._prepare_task_run()
 
         base_url = self.url_base_entry.get().strip().rstrip('/') + '/'
@@ -809,7 +804,6 @@ class JournalDownloaderApp:
         )
         self.current_thread.start()
 
-
     def _thread_wrapper(self, target_func, *args):
         result = None
         final_message = "Задача завершена."
@@ -823,13 +817,15 @@ class JournalDownloaderApp:
                 final_message = f"Скачивание завершено. Успешно скачано {success_count} из {total_pages} страниц."
                 if not self.stop_event.is_set():
                     if success_count == total_pages:
-                         self.root.after(0, lambda: messagebox.showinfo("Успех", "Все страницы успешно скачаны!"))
+                        self.root.after(0, lambda: messagebox.showinfo("Успех", "Все страницы успешно скачаны!"))
                     elif success_count > 0:
-                         self.root.after(0, lambda: messagebox.showwarning("Завершено с ошибками", f"Скачано {success_count} из {total_pages}. Проверьте лог."))
+                        self.root.after(0, lambda: messagebox.showwarning("Завершено с ошибками",
+                                                                          f"Скачано {success_count} из {total_pages}. Проверьте лог."))
                     else:
-                         self.root.after(0, lambda: messagebox.showerror("Ошибка", f"Не удалось скачать ни одной страницы. Проверьте параметры и лог ({config.LOG_FILE})."))
+                        self.root.after(0, lambda: messagebox.showerror("Ошибка",
+                                                                        f"Не удалось скачать ни одной страницы. Проверьте параметры и лог ({config.LOG_FILE})."))
                     if success_count > 0:
-                         folder_to_open = args[-1]
+                        folder_to_open = args[-1]
 
             elif target_func == self.handler.process_images:
                 processed_count, created_spread_count = result
@@ -845,16 +841,16 @@ class JournalDownloaderApp:
             error_occurred = True
             final_message = f"Критическая ошибка при выполнении задачи: {e}"
             logging.error(f"Критическая ошибка в потоке: {e}", exc_info=True)
-            self.root.after(0, lambda msg=final_message: messagebox.showerror("Критическая ошибка", f"{msg}\n\n(Подробности в лог-файле {config.LOG_FILE})"))
+            self.root.after(0, lambda msg=final_message: messagebox.showerror("Критическая ошибка",
+                                                                              f"{msg}\n\n(Подробности в лог-файле {config.LOG_FILE})"))
         finally:
             if not self.stop_event.is_set():
-                 self._update_status_safe(final_message)
-                 if folder_to_open:
-                     self.root.after(500, lambda p=folder_to_open: self.open_folder(p))
+                self._update_status_safe(final_message)
+                if folder_to_open:
+                    self.root.after(500, lambda p=folder_to_open: self.open_folder(p))
 
             self.root.after(0, lambda: self._set_buttons_state(task_running=False))
             self.current_thread = None
-
 
     def _run_all_sequence(self, base_url, url_ids, filename_pdf, total_pages, pages_dir, spreads_dir):
         download_success = False
@@ -872,15 +868,18 @@ class JournalDownloaderApp:
 
             if success_count == 0:
                 self._update_status_safe("--- Скачивание не удалось, обработка пропущена ---")
-                self.root.after(0, lambda: messagebox.showerror("Ошибка скачивания", f"Не удалось скачать ни одной страницы. Обработка не будет запущена.\nПроверьте лог ({config.LOG_FILE})."))
+                self.root.after(0, lambda: messagebox.showerror("Ошибка скачивания",
+                                                                f"Не удалось скачать ни одной страницы. Обработка не будет запущена.\nПроверьте лог ({config.LOG_FILE})."))
                 return
 
             if success_count < total_dl_pages:
-                 msg = f"--- Скачивание завершено с ошибками ({success_count}/{total_dl_pages}). Продолжаем обработку... ---"
-                 self._update_status_safe(msg)
-                 self.root.after(0, lambda c=success_count, t=total_dl_pages: messagebox.showwarning("Скачивание с ошибками", f"Скачано {c} из {t} страниц. Обработка будет запущена для скачанных файлов."))
+                msg = f"--- Скачивание завершено с ошибками ({success_count}/{total_dl_pages}). Продолжаем обработку... ---"
+                self._update_status_safe(msg)
+                self.root.after(0, lambda c=success_count, t=total_dl_pages: messagebox.showwarning(
+                    "Скачивание с ошибками",
+                    f"Скачано {c} из {t} страниц. Обработка будет запущена для скачанных файлов."))
             else:
-                 self._update_status_safe("--- Скачивание успешно завершено ---")
+                self._update_status_safe("--- Скачивание успешно завершено ---")
 
             download_success = True
 
@@ -900,18 +899,20 @@ class JournalDownloaderApp:
             if created_spread_count > 0:
                 final_message += f" Создано {created_spread_count} разворотов."
             self._update_status_safe(f"--- {final_message} ---")
-            self.root.after(0, lambda msg=final_message: messagebox.showinfo("Завершено", f"Скачивание и обработка завершены.\n{msg}"))
+            self.root.after(0, lambda msg=final_message: messagebox.showinfo("Завершено",
+                                                                             f"Скачивание и обработка завершены.\n{msg}"))
 
             if processed_count > 0:
-                 final_folder_to_open = spreads_dir
+                final_folder_to_open = spreads_dir
 
         except Exception as e:
             final_message = f"Критическая ошибка при выполнении 'Скачать и создать': {e}"
             logging.error(f"Критическая ошибка в _run_all_sequence: {e}", exc_info=True)
-            self.root.after(0, lambda msg=final_message: messagebox.showerror("Критическая ошибка", f"{msg}\n\n(Подробности в лог-файле {config.LOG_FILE})"))
+            self.root.after(0, lambda msg=final_message: messagebox.showerror("Критическая ошибка",
+                                                                              f"{msg}\n\n(Подробности в лог-файле {config.LOG_FILE})"))
         finally:
             if final_folder_to_open and not self.stop_event.is_set():
-                 self.root.after(500, lambda p=final_folder_to_open: self.open_folder(p))
+                self.root.after(500, lambda p=final_folder_to_open: self.open_folder(p))
             self.root.after(0, lambda: self._set_buttons_state(task_running=False))
             self.current_thread = None
 
@@ -927,8 +928,9 @@ if __name__ == "__main__":
         except:
             pass
         try:
-            messagebox.showerror("Фатальная ошибка", f"Произошла непредвиденная ошибка:\n{main_e}\n\nПриложение будет закрыто.\nПодробности в лог-файле: {config.LOG_FILE}")
+            messagebox.showerror("Фатальная ошибка",
+                                 f"Произошла непредвиденная ошибка:\n{main_e}\n\nПриложение будет закрыто.\nПодробности в лог-файле: {config.LOG_FILE}")
         except:
             print(f"FATAL UNHANDLED ERROR: {main_e}")
     finally:
-        logging.info("="*20 + " Приложение завершено " + "="*20)
+        logging.info("=" * 20 + " Приложение завершено " + "=" * 20)
